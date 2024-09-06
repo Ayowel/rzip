@@ -1,0 +1,54 @@
+---
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        description: A JSON-formatted string array with the platforms on which the test should run
+        default: '["windows-latest", "ubuntu-latest", "mac-latest"]'
+        required: false
+        type: string
+      python_version:
+        description: A JSON-formatted string with the python versions to use for the test
+        default: '["3"]'
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: A JSON-formatted string array with the platforms on which the test should run
+        default: '["windows-latest", "ubuntu-latest", "mac-latest"]'
+        required: false
+        type: string
+      python_version:
+        description: A JSON-formatted string array with the python versions to use for the test
+        default: '["3"]'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ fromJson(inputs.platforms) }}
+    strategy:
+      matrix:
+        python_version: ${{ fromJson(inputs.python_version) }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python_version }}
+        cache: 'pip'
+    - name: Install python dev requirements
+      run: |
+        pip install .[dev]
+        pip install pytest-codecov
+    - name: Run linter
+      run: python3 -m pylint src/rzip
+    - name: Run test harnesses
+      run: python3 -m pytest --cov-report xml
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        name: ${{ runner.name }}-${{ matrix.python_version }}
+      continue-on-error: true
+    - name: Build the package
+      run: python3 -m build

@@ -1,0 +1,42 @@
+---
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_release:
+    runs-on: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python_version }}
+        cache: 'pip'
+    - name: Install python dev requirements
+      run: pip install .[dev]
+    - name: Build release archive
+      run: python3 -m build
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
+  release_pypi:
+    runs-on: [ubuntu-latest]
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/rzip
+    steps:
+    - uses: actions/download-artifact@master
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Release to pypi
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: ${{ secrets.PYPI_USER }}
+        password: ${{ secrets.PYPI_PASSWORD }}
+        repository-url: https://test.pypi.org/legacy/
