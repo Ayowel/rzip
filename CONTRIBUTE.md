@@ -28,7 +28,7 @@ When opening an issue to ask for a fix/change, consider the following first:
   * What value/result do you expect once the change is implemented?
   * What should trigger the use of the change (new command-line parameter, environment variables, ...)
   * How could the change be implemented (if you have an idea)? Do other projects already implement this?
-* Changes/features should not affect defaults: archives must remain reproducible even after updating `rzip` to minor/patch versions. Not doing so is a major change and will be heavily scrutinized.
+* Changes/features should not affect defaults: archives must remain reproducible even after updating `rzip` to patch versions. Not doing so is a major change and such changes will be heavily scrutinized.
 
 ## Opening a pull request
 
