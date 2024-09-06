@@ -102,10 +102,14 @@ def build_zip(args):
                 logging.debug("Reset directory to %s", original_directory)
                 os.chdir(original_directory)
 
-if __name__ == '__main__':
+def main():
+    """Entrypoint used when the script is called"""
     try:
         build_zip(build_parser().parse_args())
     # pylint: disable-next=broad-except
     except Exception as e:
         logging.error("An error occured: %s", e)
         sys.exit(1)
+
+if __name__ == '__main__':
+    main()
