@@ -6,6 +6,7 @@ on:
 jobs:
   run_build:
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - windows-latest
