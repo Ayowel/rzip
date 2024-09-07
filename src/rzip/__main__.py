@@ -56,7 +56,7 @@ def build_zip(args):
     if args.root:
         assert os.path.isdir(args.root)
     if sys.version_info < (3, 7) and args.compress_level:
-        logging.warning("A compression level was provided but it will be ignored due to the python being on an old version.")
+        logging.warning("A compression level was provided but it will be ignored due to python being on an old version.")
 
     original_directory = os.getcwd()
     added_paths = set()

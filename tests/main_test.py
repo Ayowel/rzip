@@ -1,7 +1,6 @@
 """Test the __main__ rzip entrypoint"""
 import hashlib
 import os
-import pprint
 import random
 import tempfile
 import zipfile
@@ -78,8 +77,6 @@ def test_rooted_on_disk_cmd(compression):
             with zipfile.ZipFile(outfile, 'r') as zipinfo:
                 assert len(zipinfo.filelist) == 9
                 filenames = [f.filename for f in zipinfo.filelist]
-                pprint.pprint(zipinfo)
-                pprint.pprint(zipinfo.filelist)
                 assert 'test1/' in filenames
                 assert 'test1/subtest/' in filenames
                 assert 'test1/subtest_file' in filenames
