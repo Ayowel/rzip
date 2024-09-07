@@ -31,15 +31,16 @@ class Rzip:
         self.umask = mask if mask is not None else 0o0027
         if time is not None:
             self.timestamp = self._get_timestamp(time)
+        # pylint: disable=consider-using-with
         if sys.version_info >= (3, 7):
-            # pylint: disable-next=consider-using-with
+            # pylint: disable=unexpected-keyword-arg
             self.zip = zipfile.ZipFile(file, mode = 'w', compression=self.compression, compresslevel=self.compressionlevel)
+            # pylint: enable=unexpected-keyword-arg
         else:
-            # pylint: disable-next=consider-using-with
             self.zip = zipfile.ZipFile(file, mode = 'w', compression=self.compression)
-        self.zip.create_system = 0 # Do not differentiate between windows & linux systems
+        # pylint: enable=consider-using-with
 
-    # pylint: disable-next=too-many-return-statements
+    # pylint: disable=too-many-return-statements
     def _get_timestamp(self, time = None):
         """
         Get a tuple that represents the time provided as parameter
@@ -53,12 +54,14 @@ class Rzip:
                 try:
                     date = datetime.fromtimestamp(int(source_date_epoch), tz = timezone.utc)
                 except ValueError:
-                    # pylint: disable-next=line-too-long
+                    # pylint: disable=line-too-long
                     logging.error("Failed to parse SOURCE_DATE_EPOCH despite it being set (%s). Default epoch will be used instead.", source_date_epoch)
+                    # pylint: enable=line-too-long
                 else:
                     if date.year < 1980:
-                        # pylint: disable-next=line-too-long
+                        # pylint: disable=line-too-long
                         logging.warning("SOURCE_DATE_EPOCH is set to before 1980, which the ZIP format does not support. Clamping date to 1980.")
+                        # pylint: enable=line-too-long
                         return ZIP_EPOCH
                     return (date.year, date.month, date.day, date.hour, date.minute, date.second)
             return ZIP_EPOCH
@@ -71,12 +74,13 @@ class Rzip:
                 if date_len == i:
                     return (*date, *ZIP_EPOCH[i:])
             return date[:6]
-        if isinstance(time, str):
+        if isinstance(time, str) and sys.version_info >= (3,7):
             date = datetime.fromisoformat(time)
             return (date.year, date.month, date.day, date.hour, date.minute, date.second)
         if isinstance(time, datetime):
             return (time.year, time.month, time.day, time.hour, time.minute, time.second)
         raise ValueError("Received an unsupported time object.")
+    # pylint: enable=too-many-return-statements
 
     def create_directory(self, path, permissions = None, data = b'', compression = None):
         """
@@ -88,9 +92,12 @@ class Rzip:
             Associate data to the created directory. This is a useless
             parameter unless you're building a ctf of some sort or trying to hide information.
         """
+        if os.path.sep != '/':
+            path = path.replace(os.path.sep, '/')
         if not path.endswith('/'):
             path += '/'
         info = zipfile.ZipInfo(path, self._get_timestamp())
+        info.create_system = 3 # Do not differentiate between windows & linux systems
         perms = permissions if permissions is not None else (0o0777 ^ self.umask)
         info.external_attr = ((stat.S_IFDIR|perms) << 16) | 0x10 # MS-DOS directory flag
         info.compress_type = compression if compression is not None else zipfile.ZIP_STORED
@@ -102,7 +109,10 @@ class Rzip:
         may be either a 'str' or a 'bytes' instance; if it is a 'str',
         it is encoded as UTF-8 first.
         """
+        if os.path.sep != '/':
+            path = path.replace(os.path.sep, '/')
         info = zipfile.ZipInfo(path, self._get_timestamp())
+        info.create_system = 3 # Do not differentiate between windows & linux systems
         perms = permissions if permissions is not None else (0o0666 & (0o7777^ self.umask))
         info.external_attr =  (stat.S_IFREG|perms) << 16
         info.compress_type = compression if compression is not None else self.compression

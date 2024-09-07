@@ -32,19 +32,18 @@ def build_parser():
         prog="rzip",
         description="A python library to easily generate reproducible zip archives",
         epilog="\n".join((
-            f"rzip {rzip.__version__}. Learn more on reproducible builds at https://reproducible-builds.org/.",
+            "rzip {}. Learn more on reproducible builds at https://reproducible-builds.org/.".format(rzip.__version__),
         )),
     )
     # pylint: disable=line-too-long
     parser.add_argument('out_file', help="Output zip file path.")
     parser.add_argument('pattern', nargs = '+', help="File/directory pattern to add to the zip file. Prefix with ! to negate a path.")
     parser.add_argument('--file', '-f', help="Source file to extract patterns from.")
-    parser.add_argument('--compression', '-c', choices=COMPRESSION_ALGORITHMS, default='stored', help="The compression algorithm to use. Make sure that the corresponding libraries are installed.")
-    if sys.version_info >= (3, 7):
-        parser.add_argument('--compress-level', '-C', type=int, help="The compression level to use. Only has an effect if the compression used is 'deflated' or 'bzip2'.")
+    parser.add_argument('--compression', '-c', choices=COMPRESSION_ALGORITHMS, default='deflated', help="The compression algorithm to use. Make sure that the corresponding libraries are installed.")
+    parser.add_argument('--compress-level', '-C', type=int, help="(Python 3.7+) The compression level to use. Only has an effect if the compression used is 'deflated' or 'bzip2'.")
     parser.add_argument('--perm', '-p', action='append', help="Set files permissions. A pattern to the files affected by the change may be provided in the form perm=pattern.")
     parser.add_argument('--umask', '-u', help="Default umask to apply to all files/directories.")
-    parser.add_argument('--time', '-t', help="Default time to use for all files (in the ISO format).")
+    parser.add_argument('--time', '-t', help="(Python 3.7+) Default time to use for all files (in the ISO format).")
     parser.add_argument('--recurse', '-r', default=False, action='store_true', help="Also add matched directories content.")
     parser.add_argument('--root', '-R', help="Base path from which all input files searched for.")
     # pylint: enable=line-too-long
@@ -56,12 +55,20 @@ def build_zip(args):
     """
     if args.root:
         assert os.path.isdir(args.root)
+    if sys.version_info < (3, 7) and args.compress_level:
+        logging.warning("A compression level was provided but it will be ignored due to the python being on an old version.")
 
     original_directory = os.getcwd()
     added_paths = set()
-    compression = getattr(zipfile, f'ZIP_{args.compression.upper()}')
+    compression = getattr(zipfile, 'ZIP_{}'.format(args.compression.upper()))
     # pylint: disable-next=line-too-long
-    with rzip.Rzip(args.out_file, compression=compression, compresslevel=args.compress_level, mask=args.umask, time=args.time) as handle:
+    rzip_args = {
+        'compression': compression,
+        'compresslevel': args.compress_level,
+        'mask': args.umask,
+        'time': args.time,
+    }
+    with rzip.Rzip(args.out_file, **rzip_args) as handle:
         if args.root:
             logging.debug("Change directory to %s", args.root)
             os.chdir(args.root)
@@ -74,7 +81,7 @@ def build_zip(args):
                 else:
                     glob_match = sorted(glob.glob(pattern, recursive=True))
                 if not glob_match:
-                    raise ValueError(f"Pattern did not match any file ({pattern})")
+                    raise ValueError("Pattern did not match any file ({})".format(pattern))
                 i = 0
                 while i < len(glob_match):
                     path = glob_match[i]
@@ -84,7 +91,8 @@ def build_zip(args):
                         continue
                     added_paths.add(abs_path)
                     if os.path.isdir(path):
-                        handle.create_directory(path if path.endswith('/') else f"{path}/", compression=zipfile.ZIP_STORED)
+                        zip_path = path if path.endswith('/') else "{}/".format(path)
+                        handle.create_directory(zip_path, compression=zipfile.ZIP_STORED)
                         if args.recurse:
                             for root, dirs, files in os.walk(path):
                                 dirs.sort()
@@ -106,10 +114,11 @@ def main():
     """Entrypoint used when the script is called"""
     try:
         build_zip(build_parser().parse_args())
-    # pylint: disable-next=broad-except
-    except Exception as e:
-        logging.error("An error occured: %s", e)
+    # pylint: disable=broad-except
+    except Exception as exc:
+        logging.error("An error occured: %s", exc)
         sys.exit(1)
+    # pylint: enable=broad-except
 
 if __name__ == '__main__':
     main()

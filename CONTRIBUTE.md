@@ -63,7 +63,7 @@ Once this is done, most IDEs will detect the venv and automatically work within 
 To install the project's dev dependencies, run pip from the project's directory:
 
 ```bash
-pip install '.[test]'
+pip install -r dev-requirements.txt
 ```
 
 ### Test changes
@@ -84,7 +84,7 @@ To install Act, you will need to have a working installation of Docker/Podman an
 Once Act is installed, run the `build` job to test your changes:
 
 ```bash
-act -j build
+act -j run_build
 ```
 
 Note that Act runners will not test all OS, so there may still be lingering issues that will only be noticed once your code changes run on said environments

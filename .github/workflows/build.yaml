@@ -12,6 +12,11 @@ on:
         default: '["3"]'
         required: false
         type: string
+      pip_trusted_hosts:
+        description: Additionnal options to pass to PIP at runtime
+        default: ''
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
       platforms:
@@ -24,11 +29,17 @@ on:
         default: '["3"]'
         required: false
         type: string
+      pip_trusted_hosts:
+        description: Additionnal options to pass to PIP at runtime
+        default: ''
+        required: false
+        type: string
 
 jobs:
   build:
     runs-on: ${{ fromJson(inputs.platforms) }}
     strategy:
+      fail-fast: false
       matrix:
         python_version: ${{ fromJson(inputs.python_version) }}
     steps:
@@ -37,18 +48,25 @@ jobs:
       with:
         python-version: ${{ matrix.python_version }}
         cache: 'pip'
+      env:
+        PIP_TRUSTED_HOST: ${{ inputs.pip_trusted_hosts }}
     - name: Install python dev requirements
       run: |
-        pip install .[dev]
-        pip install pytest-codecov
+        pip install -r dev-requirements.txt
+      env:
+        PIP_TRUSTED_HOST: ${{ inputs.pip_trusted_hosts }}
     - name: Run linter
       run: python3 -m pylint src/rzip
     - name: Run test harnesses
       run: python3 -m pytest --cov-report xml
+      env:
+        PYTHONPATH: src
     - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v3
       with:
         name: ${{ runner.name }}-${{ matrix.python_version }}
       continue-on-error: true
     - name: Build the package
       run: python3 -m build
+      env:
+        PIP_TRUSTED_HOST: ${{ inputs.pip_trusted_hosts }}

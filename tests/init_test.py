@@ -2,6 +2,7 @@
 import datetime
 import hashlib
 import os
+import sys
 import tempfile
 import unittest.mock
 import zipfile
@@ -65,7 +66,7 @@ def test_source_date_epoch(logging_warning_mock, logging_error_mock):
         os.environ['SOURCE_DATE_EPOCH'] = 'azeqsdgjhaze'
         with rzip.Rzip(tmpfile) as f:
             f.create_directory('test')
-            logging_error_mock.assert_called_once()
+            assert logging_error_mock.call_count == 1
             logging_error_mock.reset_mock()
         tmpfile.seek(0)
         with zipfile.ZipFile(tmpfile) as f:
@@ -75,7 +76,7 @@ def test_source_date_epoch(logging_warning_mock, logging_error_mock):
         tmpfile.flush()
 
         # Check invalid date logging
-        os.environ['SOURCE_DATE_EPOCH'] = f'{3600*24*366*5}'
+        os.environ['SOURCE_DATE_EPOCH'] = str(3600*24*366*5)
         with rzip.Rzip(tmpfile) as f:
             f.create_directory('test')
         tmpfile.seek(0)
@@ -88,7 +89,7 @@ def test_source_date_epoch(logging_warning_mock, logging_error_mock):
         tmpfile.flush()
 
         # Check valid format logging
-        os.environ['SOURCE_DATE_EPOCH'] = f'{3600*24*366*15}'
+        os.environ['SOURCE_DATE_EPOCH'] = str(3600*24*366*15)
         with rzip.Rzip(tmpfile) as f:
             f.create_directory('test')
         tmpfile.seek(0)
@@ -101,7 +102,7 @@ def test_source_date_epoch(logging_warning_mock, logging_error_mock):
         logging_warning_mock.assert_not_called()
 
         # Check precedence with explicit zip date
-        os.environ['SOURCE_DATE_EPOCH'] = f'{3600*24*366*15}'
+        os.environ['SOURCE_DATE_EPOCH'] = str(3600*24*366*15)
         with rzip.Rzip(tmpfile, time = (2000, 1, 1, 0, 0, 0)) as f:
             f.create_directory('test')
         tmpfile.seek(0)
@@ -120,20 +121,21 @@ def test_timeformats():
                 pass
         tmpfile.flush()
 
-        # Unsupported time string
-        with pytest.raises(ValueError) as _:
-            with rzip.Rzip(tmpfile, time = '2 eggs') as _:
-                pass
-        tmpfile.flush()
+        if sys.version_info >= (3, 7):
+            # Unsupported time string
+            with pytest.raises(ValueError) as _:
+                with rzip.Rzip(tmpfile, time = '2 eggs') as _:
+                    pass
+            tmpfile.flush()
 
-        # Supported time string
-        with rzip.Rzip(tmpfile, time = '1985-02-03') as f:
-            f.create_directory('test')
-        tmpfile.seek(0)
-        with zipfile.ZipFile(tmpfile) as f:
-            assert len(f.filelist) == 1
-            assert f.filelist[0].date_time == (1985,2,3,0,0,0)
-        tmpfile.flush()
+            # Supported time string
+            with rzip.Rzip(tmpfile, time = '1985-02-03') as f:
+                f.create_directory('test')
+            tmpfile.seek(0)
+            with zipfile.ZipFile(tmpfile) as f:
+                assert len(f.filelist) == 1
+                assert f.filelist[0].date_time == (1985,2,3,0,0,0)
+            tmpfile.flush()
 
         # Supported time list (too many items)
         with rzip.Rzip(tmpfile, time = (1990,1,1,0,0,0)) as f:

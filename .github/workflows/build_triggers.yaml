@@ -2,6 +2,7 @@
 on:
   push: {}
   pull_request: {}
+  workflow_dispatch: {}
 
 jobs:
   run_build:
@@ -10,19 +11,30 @@ jobs:
       matrix:
         platform:
           - windows-latest
+          - windows-latest-oldpy
           - ubuntu-20.04
           - ubuntu-latest
           - mac-latest
+          - macos-12
         include:
         - platform: windows-latest
-          python_version: '["<3.1", "<3.6", "3"]'
+          python_version: '["3"]'
+        - platform: windows-latest-oldpy
+          platform_override: windows-latest
+          python_version: '["3.3", "3.5"]'
+          pip_trusted_hosts: pypi.org pypi.python.org files.pythonhosted.org
         - platform: ubuntu-20.04
-          python_version: '["<3.6"]'
+          python_version: '["3.5"]'
+          pip_trusted_hosts: pypi.org pypi.python.org files.pythonhosted.org
         - platform: ubuntu-latest
           python_version: '["3"]'
-        - platform: mac-latest
-          python_version: '["<3.6", "3"]'
+        - platform: macos-latest
+          python_version: '["3"]'
+        - platform: macos-12
+          python_version: '["3.5"]'
+          pip_trusted_hosts: pypi.org pypi.python.org files.pythonhosted.org
     uses: ./.github/workflows/build.yaml
     with:
-      platforms: '["${{ matrix.platform }}"]'
+      platforms: '["${{ matrix.platform_override || matrix.platform }}"]'
       python_version: ${{ matrix.python_version }}
+      pip_trusted_hosts: ${{ matrix.pip_trusted_hosts || '' }}

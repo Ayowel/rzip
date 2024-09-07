@@ -7,7 +7,7 @@ authors = [
   { name="Ayowel", email="ayowel@users.noreply.github.com" },
 ]
 description = "Reproducible zip build utility"
-requires-python = ">=3.0"
+requires-python = ">=3.3"
 classifiers = [
     "Environment :: Console",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -32,14 +32,6 @@ rzip = "rzip.__main__:main"
 [tool.setuptools.dynamic]
 version = {attr = 'rzip.__version__'}
 
-[project.optional-dependencies]
-dev = [
-    "pylint >=2.15.5,<3.0.0",
-    "pytest >=7.2.0,<8.0.0",
-    "pytest-cov >=5.0.0,<6.0.0",
-    "build",
-]
-
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
