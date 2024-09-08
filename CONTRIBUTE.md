@@ -10,7 +10,7 @@ Please always search for similar issues before opening one.
 
 When opening an issue for a fix, make sure to describe the problem with as much detail as possible. Indicate:
 
-* What `rzip` version you are using
+* What `repzip` version you are using
 * What OS (Windows/Linux/Mac) you are using
 * What error message you are seeing (if there is none, explicitely say so)
 * How the problem occured:
@@ -28,7 +28,7 @@ When opening an issue to ask for a fix/change, consider the following first:
   * What value/result do you expect once the change is implemented?
   * What should trigger the use of the change (new command-line parameter, environment variables, ...)
   * How could the change be implemented (if you have an idea)? Do other projects already implement this?
-* Changes/features should not affect defaults: archives must remain reproducible even after updating `rzip` to patch versions. Not doing so is a major change and such changes will be heavily scrutinized.
+* Changes/features should not affect defaults: archives must remain reproducible even after updating `repzip` to patch versions. Not doing so is a major change and such changes will be heavily scrutinized.
 
 ## Opening a pull request
 
@@ -71,7 +71,7 @@ pip install -r dev-requirements.txt
 To test your changes, run `pylint` to check the formatting and `pytest` to ensure that all tests pass:
 
 ```
-pylint src/rzip
+pylint src/repzip
 pytest
 ```
 

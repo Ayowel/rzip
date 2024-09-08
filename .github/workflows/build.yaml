@@ -56,7 +56,7 @@ jobs:
       env:
         PIP_TRUSTED_HOST: ${{ inputs.pip_trusted_hosts }}
     - name: Run linter
-      run: python3 -m pylint src/rzip
+      run: python3 -m pylint src/repzip
     - name: Run test harnesses
       run: python3 -m pytest --cov-report xml
       env:

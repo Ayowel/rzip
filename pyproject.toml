@@ -1,5 +1,5 @@
 [project]
-name = "rzip"
+name = "repzip"
 dynamic = ['version']
 license = {file = "LICENSE"}
 readme = "README.md"
@@ -27,10 +27,10 @@ Homepage = "https://github.com/ayowel/rzip"
 Issues = "https://github.com/ayowel/rzip/issues"
 
 [project.scripts]
-rzip = "rzip.__main__:main"
+repzip = "repzip.__main__:main"
 
 [tool.setuptools.dynamic]
-version = {attr = 'rzip.__version__'}
+version = {attr = 'repzip.__version__'}
 
 [build-system]
 requires = ["setuptools"]

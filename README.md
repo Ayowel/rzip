@@ -1,4 +1,4 @@
-# Rzip
+# Repzip
 
 Easy reproducible ZIP generation with Python.
 
@@ -10,13 +10,13 @@ generating the archive used to share them.
 Recursively add all files in a directory to a zip archive:
 
 ```bash
-rzip -r archive.zip directory
+repzip -r archive.zip directory
 ```
 
 ## Installation
 
-Install rzip with pip:
+Install repzip with pip:
 
 ```bash
-pip install rzip
+pip install repzip
 ```

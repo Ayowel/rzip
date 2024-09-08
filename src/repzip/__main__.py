@@ -10,7 +10,7 @@ import mmap
 import os
 import sys
 import zipfile
-import rzip
+import repzip as rzip
 
 COMPRESSION_ALGORITHMS = ['stored', 'deflated']
 if sys.version_info >= (3,3):
@@ -26,13 +26,13 @@ EXE_MAGICS = [
 
 def build_parser():
     """
-    Creates the argument parser used by rzip and returns it.
+    Creates the argument parser and returns it.
     """
     parser = argparse.ArgumentParser(
-        prog="rzip",
+        prog="repzip",
         description="A python library to easily generate reproducible zip archives",
         epilog="\n".join((
-            "rzip {}. Learn more on reproducible builds at https://reproducible-builds.org/.".format(rzip.__version__),
+            "repzip {}. Learn more on reproducible builds at https://reproducible-builds.org/.".format(rzip.__version__),
         )),
     )
     # pylint: disable=line-too-long

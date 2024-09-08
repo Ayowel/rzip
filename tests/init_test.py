@@ -7,7 +7,7 @@ import tempfile
 import unittest.mock
 import zipfile
 import pytest
-import rzip
+import repzip as rzip
 
 @pytest.fixture(autouse=True)
 def clear_env():

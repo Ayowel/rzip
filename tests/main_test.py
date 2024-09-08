@@ -5,7 +5,7 @@ import random
 import tempfile
 import zipfile
 import pytest
-import rzip.__main__ as rzipmain # pylint: disable=no-name-in-module,import-error
+import repzip.__main__ as rzipmain # pylint: disable=no-name-in-module,import-error
 
 @pytest.fixture(autouse=True)
 def clear_env():
